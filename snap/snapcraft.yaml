@@ -1,0 +1,196 @@
+name: saymore-unofficial
+title: SayMore (via WINE)
+# base: core22 # problems with bindtextdomain.so:
+# ERROR: ld.so: object '/snap/saymore-unofficial/17/gnome-platform/$LIB/bindtextdomain.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+# core20 ideas from https://github.com/mmtrt/notepad-plus-plus
+base: core20
+version: '3.5.1' # matches installer version below
+grade: stable
+summary: Make common Language Documentation tasks fun and keep you productive.
+description: |
+  NOTE: Due to the way this app uses .NET it is incompatible with snap confinement policy.
+  Until a solution is found the snap needs to be installed with the '--devmode' flag to work properly.
+
+  Recording speakers of the world’s languages is fun and rewarding, but keeping all the resulting
+  files and meta data organized? Converting files to archive formats? Transcription? Painful.
+
+  That’s why we built SayMore – to make common Language Documentation tasks fun and keep you productive.
+confinement: strict
+license: MIT
+website: https://github.com/wasta-linux/saymore-snap
+contact: nate_marti@sil.org
+issues: https://github.com/wasta-linux/saymore-snap/issues
+icon: snap/gui/saymore-unofficial.png
+architectures:
+  - amd64
+
+environment:
+  SOMMELIER_NO_THEME: "true" # avoid crash b/c of Light theme
+  SYSTEM_WGETRC: $SNAP/wine-runtime/etc/wgetrc
+  TRICKS: "fontsmooth=rgb corefonts dotnet462" # dotnet40 dotnet45 dotnet46 dotnet461 explicitly install all .NETs
+  # WINEARCH: "win64"
+  WINEARCH: "win32"
+  WINEDLLOVERRIDES: "mscoree,mshtml=" # Prevent pop-ups about Wine Mono and Wine Gecko
+
+apps:
+  saymore-unofficial:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/sommelier run-exe
+    environment:
+      INSTALL_EXE: "${SNAP}/data/SayMoreInstaller.3.5.1.msi"
+      INSTALL_FLAGS: "/passive"
+      # RUN_EXE: "C:/Program Files (x86)/SayMore/SayMore.exe"
+      RUN_EXE: "C:/Program Files/SayMore/SayMore.exe"
+
+  init:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/sommelier
+    environment:
+      INIT: '1'
+
+  kill-saymore:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/kill-saymore
+
+  kill-procs:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/kill-procs
+
+  list-procs:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/list-procs
+  
+  watch-procs:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/watch-procs
+
+  # reinstall-dotnet:
+  #   # extensions: [gnome]
+  #   extensions: [gnome-3-38]
+  #   command: bin/sommelier winetricks -f -q dotnet462 # fails to reinstall
+
+  remove-wine-prefix:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/sommelier winetricks annihilate
+
+  wine:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/sommelier $WINELOADER
+
+  winecfg:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/sommelier winecfg
+
+  winetricks:
+    # extensions: [gnome]
+    extensions: [gnome-3-38]
+    command: bin/sommelier winetricks
+
+plugs:
+  # something that allows "ptrace" is needed for confinement to work; use --devmode as a workaround
+  audio-playback:
+  desktop:
+  desktop-legacy:
+  home:
+  network:
+  removable-media:
+  wayland:
+  x11:
+
+  # wine-runtime-c22:
+  #   interface: content
+  #   target: $SNAP/wine-runtime
+  #   default-provider: wine-platform-runtime-core22
+  # wine-platform-7-stable-c22:
+  #   interface: content
+  #   target: $SNAP/wine-platform
+  #   default-provider: wine-platform-7-stable-core22
+
+  wine-runtime-c20:
+    interface: content
+    target: $SNAP/wine-runtime
+    default-provider: wine-platform-runtime-core20
+  wine-7-stable:
+    interface: content
+    target: $SNAP/wine-platform
+    default-provider: wine-platform-7-stable-core20
+
+parts:
+  data:
+    plugin: dump
+    source: data/
+    organize:
+      "*": data/
+    stage:
+      - data
+
+  debs:
+    plugin: nil
+    stage-packages:
+      - procps
+      - xmlstarlet
+    prime:
+      - bin/kill
+      - usr/bin/pgrep
+      - usr/bin/pkill
+      - usr/bin/xmlstarlet
+      - usr/bin/watch
+
+  # This reverts changes from https://github.com/snapcore/snapcraft/pull/3586
+  fix-fontconfig:
+    plugin: nil
+    after: [gnome-3-38-extension]
+    override-prime: |
+      sed -i '/snap-package/,+1d' $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch
+
+  # Ref: https://github.com/mmtrt/notepad-plus-plus
+  fix-bindtext:
+    plugin: nil
+    after: [gnome-3-38-extension]
+    override-prime: |
+      sed -i "$(grep -in bindtext $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch | cut -d':' -f1 | tail -2 | head -1)d" $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch
+      sed -i "$(grep -in bindtext $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch | cut -d':' -f1 | tail -1)d" $SNAPCRAFT_PRIME/snap/command-chain/desktop-launch
+
+  hooks:
+    plugin: dump
+    source: hooks/
+    organize:
+      "*": sommelier/hooks/
+    stage:
+      - sommelier
+
+  scripts:
+    plugin: dump
+    source: scripts/
+    organize:
+      "*": bin/
+    stage:
+      - bin
+
+  sommelier-core:
+    plugin: make
+    source: https://github.com/snapcrafters/sommelier-core.git
+    source-branch: "1.0"
+    # source: https://github.com/mmtrt/sommelier-core.git # to make core20 work
+    # source-branch: "core20"
+    override-prime: |
+      # craftctl default # core22
+      snapcraftctl prime # core20
+
+      # Don't let yad dialogs stay always-on-top.
+      sed -r -i 's|(yad.*) --on-top|\1|g' bin/sommelier
+      # # Remove annoying yad dialog for interactive MSI install.
+      # sed -r -i 's|(yes.*Installing .*EXE_NAME.*)|# \1|' bin/sommelier
+      # sed -r -i 's|(.*INSTALL_YAD_PID)|# \1|g' bin/sommelier
+
+      # Add init-only command.
+      sed -r -i 's|(\s+)(init_wine)$|\1\2\n\1if [[ $INIT == '1' ]]; then exit 0; fi|' bin/sommelier

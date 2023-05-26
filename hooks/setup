@@ -1,0 +1,20 @@
+#!/bin/env bash
+
+### This is sourced by wine-launch/launch-app.sh. It serves the same purpose as sommelier' snapcraft.yaml.
+
+export APP_SHARE_DIR="$PWD"
+
+export TRICKS="corefonts fontsmooth=rgb dotnet48" #dotnet461
+export INSTALL_FLAGS="/qn" # /qn for silent (MSI)
+
+# Set WINE environment variables.
+# export WINEARCH="win32"
+export WINEARCH="win64" # default for sommelier
+export WINEDLLOVERRIDES="$WINEDLLOVERRIDES;mscoree=;mshtml="
+export WINELOADER="/snap/wine-platform-7-stable-core20/current/opt/wine-stable/bin/wine"
+export WINETRICKS="/snap/wine-platform-runtime-core20/current/bin/winetricks"
+export WINEPREFIX="${APP_SHARE_DIR}/.wine"
+
+# Set wine-launch environment variables.
+export INSTALL_EXE="${APP_SHARE_DIR}/data/Cog-1.3.6-Setup.exe"
+export RUN_EXE="${WINEPREFIX}/drive_c/Program Files/SIL/Cog/Cog.exe" # regardless of WINEARCH

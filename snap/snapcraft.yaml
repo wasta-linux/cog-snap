@@ -1,97 +1,66 @@
-name: saymore-unofficial
-title: SayMore (via WINE)
+name: cog-unofficial
+title: Cog (via WINE)
 # base: core22 # problems with bindtextdomain.so:
 # ERROR: ld.so: object '/snap/saymore-unofficial/17/gnome-platform/$LIB/bindtextdomain.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
 # core20 ideas from https://github.com/mmtrt/notepad-plus-plus
 base: core20
-version: '3.5.1' # matches installer version below
+version: '1.3.6' # matches installer version below
 grade: stable
-summary: Make common Language Documentation tasks fun and keep you productive.
+summary: Compare languages using lexicostatistics and comparative linguistics techniques.
 description: |
-  NOTE: Due to the way this app uses .NET it is incompatible with snap confinement policy.
-  Until a solution is found the snap needs to be installed with the '--devmode' flag to work properly.
+  Cog is a tool for comparing languages using lexicostatistics and comparative linguistics techniques. It can be used to automate much of the process of comparing word lists from different language varieties.
 
-  Recording speakers of the world’s languages is fun and rewarding, but keeping all the resulting
-  files and meta data organized? Converting files to archive formats? Transcription? Painful.
-
-  That’s why we built SayMore – to make common Language Documentation tasks fun and keep you productive.
-confinement: strict
+  The goal of Cog is to provide a framework for experimenting with different techniques for language variety comparison. It is intended to be used iteratively: run a comparison, analyze the results, refine the process, run the comparison again, and so on. Most steps in the process can be tailored. It currently only supports a few comparison techniques, but we hope to include many more in the future.
+confinement: devmode # strict
 license: MIT
-website: https://github.com/wasta-linux/saymore-snap
+website: https://github.com/wasta-linux/cog-snap
 contact: nate_marti@sil.org
-issues: https://github.com/wasta-linux/saymore-snap/issues
-icon: snap/gui/saymore-unofficial.png
+issues: https://github.com/wasta-linux/cog-snap/issues
+icon: snap/gui/cog-unofficial.png
 architectures:
   - amd64
 
 environment:
-  SOMMELIER_NO_THEME: "true" # avoid crash b/c of Light theme
+  # SOMMELIER_NO_THEME: "true" # avoid crash b/c of Light theme
   SYSTEM_WGETRC: $SNAP/wine-runtime/etc/wgetrc
-  TRICKS: "fontsmooth=rgb corefonts dotnet462" # dotnet40 dotnet45 dotnet46 dotnet461 explicitly install all .NETs
-  # WINEARCH: "win64"
-  WINEARCH: "win32"
-  WINEDLLOVERRIDES: "mscoree,mshtml=" # Prevent pop-ups about Wine Mono and Wine Gecko
+  TRICKS: "fontsmooth=rgb corefonts dotnet48 vkd3d"
+  # WINEARCH: "win64" # sommelier default
+  WINEDLLOVERRIDES: "mscoree=n;" # Prevent pop-up about Wine Mono
 
 apps:
   saymore-unofficial:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
     command: bin/sommelier run-exe
     environment:
-      INSTALL_EXE: "${SNAP}/data/SayMoreInstaller.3.5.1.msi"
+      INSTALL_EXE: "${SNAP}/data/Cog-1.3.6-Setup.exe"
       INSTALL_FLAGS: "/passive"
-      # RUN_EXE: "C:/Program Files (x86)/SayMore/SayMore.exe"
-      RUN_EXE: "C:/Program Files/SayMore/SayMore.exe"
-
-  init:
-    # extensions: [gnome]
-    extensions: [gnome-3-38]
-    command: bin/sommelier
-    environment:
-      INIT: '1'
-
-  kill-saymore:
-    # extensions: [gnome]
-    extensions: [gnome-3-38]
-    command: bin/kill-saymore
+      RUN_EXE: "C:/Program Files/SIL/Cog/Cog.exe"
 
   kill-procs:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
     command: bin/kill-procs
 
   list-procs:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
     command: bin/list-procs
   
   watch-procs:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
     command: bin/watch-procs
 
-  # reinstall-dotnet:
-  #   # extensions: [gnome]
-  #   extensions: [gnome-3-38]
-  #   command: bin/sommelier winetricks -f -q dotnet462 # fails to reinstall
-
   remove-wine-prefix:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
-    command: bin/sommelier winetricks annihilate
+    command: bin/remove-wine-prefix
 
   wine:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
     command: bin/sommelier $WINELOADER
 
   winecfg:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
     command: bin/sommelier winecfg
 
   winetricks:
-    # extensions: [gnome]
     extensions: [gnome-3-38]
     command: bin/sommelier winetricks
 
@@ -105,15 +74,6 @@ plugs:
   removable-media:
   wayland:
   x11:
-
-  # wine-runtime-c22:
-  #   interface: content
-  #   target: $SNAP/wine-runtime
-  #   default-provider: wine-platform-runtime-core22
-  # wine-platform-7-stable-c22:
-  #   interface: content
-  #   target: $SNAP/wine-platform
-  #   default-provider: wine-platform-7-stable-core22
 
   wine-runtime-c20:
     interface: content
@@ -137,13 +97,14 @@ parts:
     plugin: nil
     stage-packages:
       - procps
-      - xmlstarlet
+      - zstd
     prime:
       - bin/kill
       - usr/bin/pgrep
       - usr/bin/pkill
-      - usr/bin/xmlstarlet
       - usr/bin/watch
+      - usr/bin/unzstd
+      - usr/bin/zstd
 
   # This reverts changes from https://github.com/snapcore/snapcraft/pull/3586
   fix-fontconfig:

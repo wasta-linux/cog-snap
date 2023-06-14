@@ -6,7 +6,7 @@ title: Cog (via WINE)
 base: core20
 version: '1.3.6' # matches installer version below
 grade: stable
-summary: Compare languages using lexicostatistics and comparative linguistics techniques.
+summary: Compare languages using statistical and comparative linguistics techniques.
 description: |
   Cog is a tool for comparing languages using lexicostatistics and comparative linguistics techniques. It can be used to automate much of the process of comparing word lists from different language varieties.
 

@@ -4,15 +4,16 @@
 
 export APP_SHARE_DIR="$PWD"
 
-export TRICKS="corefonts fontsmooth=rgb dotnet48" #dotnet461
-export INSTALL_FLAGS="/qn" # /qn for silent (MSI)
+export TRICKS="corefonts fontsmooth=rgb dotnet48 vkd3d"
+export INSTALL_FLAGS="/passive" # /qn for silent (MSI)
 
 # Set WINE environment variables.
 # export WINEARCH="win32"
 export WINEARCH="win64" # default for sommelier
-export WINEDLLOVERRIDES="$WINEDLLOVERRIDES;mscoree=;mshtml="
+export WINEDLLOVERRIDES="$WINEDLLOVERRIDES;mscoree=n;"
 export WINELOADER="/snap/wine-platform-7-stable-core20/current/opt/wine-stable/bin/wine"
-export WINETRICKS="/snap/wine-platform-runtime-core20/current/bin/winetricks"
+# export WINETRICKS="/snap/wine-platform-runtime-core20/current/bin/winetricks"
+export WINETRICKS="/usr/bin/winetricks"
 export WINEPREFIX="${APP_SHARE_DIR}/.wine"
 
 # Set wine-launch environment variables.

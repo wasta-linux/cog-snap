@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Cog
+Comment=Compare languages (snap via WINE)
+Exec=cog-unofficial
+Icon=${SNAP}/meta/gui/cog-unofficial.png
+Terminal=false
+Type=Application
+Categories=Education;Science;
+StartupWMClass=cog.exe
+StartupNotify=false
+Keywords=Cog;Compare;SIL;

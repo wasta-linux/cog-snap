@@ -28,7 +28,7 @@ environment:
   WINEDLLOVERRIDES: "mscoree=n;" # Prevent pop-up about Wine Mono
 
 apps:
-  saymore-unofficial:
+  cog-unofficial:
     extensions: [gnome-3-38]
     command: bin/sommelier run-exe
     environment:
